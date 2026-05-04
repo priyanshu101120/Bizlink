@@ -27,7 +27,7 @@ const LoginPage = ({ role }: { role?: string }) => {
 
     try {
       if (isSingnUp) {
-        await SignUp(name, email, password, role);
+        await SignUp(name, email, password, role as string);
         setisSingnUp(false);
         alert("BizLink account created! Please login now.");
       } else {

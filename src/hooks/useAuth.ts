@@ -1,53 +1,41 @@
-'use client'
+ 'use client'
 import supabase from "@/supabase/supabase"
 import { User } from "@supabase/supabase-js"
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react"
-
 
 const useAuth = () => {
 
   const [user, setUser] = useState<User | null>(null)
   const router = useRouter()
 
- useEffect(() => {
-  let isMounted = true;
+  useEffect(()=>{
+    let isMounted = true; // Flag to track if the component is still mounted
 
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-    if (isMounted) {
-      setUser(session?.user ?? null);
-    }
-
-    // Jab INITIAL_SESSION ya SIGNED_IN event ho, tab profile check karke redirect karo
-    if (event === 'SIGNED_IN' && session?.user) {
-      const user = session.user;
-      
-      // Profile fetch karein taaki role pata chale
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (profile) {
-        if (profile.role === 'retailer') {
-          router.push('/retailer-dashboard');
-        } else if (profile.role === 'wholesaler') {
-          router.push('/wholesaler-dashboard');
-        }
-      } else {
-        // Agar naya user hai jisne Google se login kiya aur profile nahi bani
-        // Toh aap use profile completion page ya default dashboard bhej sakte hain
-        console.log("No profile found for this user.");
+   const loadUser = async () => {
+    const {data, error}= await supabase.auth.getUser()
+    if (error) {
+        console.log("error load user", error.message);
+        if (isMounted) setUser(null);
+        return;
       }
-    }
-  });
+      if (isMounted) {
+        setUser(data.user);
+      }
+   }
+    loadUser()
 
-  return () => {
-    isMounted = false;
-    subscription.unsubscribe();
-  };
-}, [router]);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const Login = async (email: string, password: string): Promise<void> => {
     const { data,error } = await supabase.auth.signInWithPassword({ email, password })
@@ -97,4 +85,3 @@ const useAuth = () => {
 };
 
 export default useAuth;
-  
