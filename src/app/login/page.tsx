@@ -1,12 +1,13 @@
-'use client';
-import LoginPage from '@/components/LoginPage'
-import { useSearchParams } from "next/navigation";
+// 'use client' BILKUL NAHI — yeh server component rahega
+import { Suspense } from 'react';
+import LoginWrapper from '@/components/LoginWrapper';
 
 const Page = () => {
-  const searchParams = useSearchParams();
-  const role = searchParams.get("role") ?? undefined;
-
-  return <LoginPage role={role} />;
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center font-bold text-[#006989]">Loading BizLink...</div>}>
+      <LoginWrapper />
+    </Suspense>
+  );
 }
 
-export default Page
+export default Page;
