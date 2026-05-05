@@ -1,4 +1,4 @@
-// app/select-role/page.tsx
+
 'use client'
 import supabase from '@/supabase/supabase'
 import { useRouter } from 'next/navigation'
@@ -10,7 +10,7 @@ export default function SelectRole() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    // Profile table mein role save karo
+    
     await supabase.from('profiles').upsert({
       id: user.id,
       name: user.user_metadata?.full_name || user.email,

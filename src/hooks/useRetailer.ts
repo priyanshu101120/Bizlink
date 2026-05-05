@@ -160,13 +160,13 @@ const useRetailer = () => {
             ...prev,
             {
               id: Date.now(),
-              message: "Ek naya wholesaler ne connect kiya!",
+              message: "wholesaler connected",
               type: "success",
               read: false,
               time: new Date().toISOString(),
             },
           ]);
-          sendBrowserNotification("Ek naya wholesaler ne connect kiya!");
+          sendBrowserNotification("wholesaler connected");
         },
       )
       .on(
@@ -183,13 +183,13 @@ const useRetailer = () => {
             ...prev,
             {
               id: Date.now(),
-              message: "Ek wholesaler ne disconnect kar dia.",
+              message: "wholesaler disconnected",
               type: "danger",
               read: false,
               time: new Date().toISOString(),
             },
           ]);
-          sendBrowserNotification("Ek wholesaler ne disconnect kar dia.");
+          sendBrowserNotification("wholesaler disconnected");
         },
       )
       .subscribe();
@@ -214,14 +214,14 @@ const useRetailer = () => {
             ...prev,
             {
               id: Date.now(),
-              message: `Naya product available: "${payload.new.name}"`,
+              message: `New product available: "${payload.new.name}"`,
               type: "success",
               read: false,
               time: new Date().toISOString(),
             },
           ]);
           sendBrowserNotification(
-            `Naya product available: "${payload.new.name}"`,
+            `New product available: "${payload.new.name}"`,
           );
         },
       )
@@ -243,13 +243,13 @@ const useRetailer = () => {
             ...prev,
             {
               id: Date.now(),
-              message: `Product update hua: "${payload.new.name}"`,
+              message: `Product update: "${payload.new.name}"`,
               type: "warning",
               read: false,
               time: new Date().toISOString(),
             },
           ]);
-          sendBrowserNotification(`Product update hua: "${payload.new.name}"`);
+          sendBrowserNotification(`Product update: "${payload.new.name}"`);
         },
       )
       .on(

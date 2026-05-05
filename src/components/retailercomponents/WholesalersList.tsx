@@ -13,7 +13,7 @@ export default function WholesalersList({
 }: Props) {
   return (
     <Card className="border border-[#006989] shadow-sm p-4 space-y-3">
-      {/* Connected */}
+      
       {connections.length > 0 && (
         <div className="bg-white rounded-2xl border border-[#006989] overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-200">
@@ -40,7 +40,7 @@ export default function WholesalersList({
         </div>
       )}
 
-      {/* Available to connect */}
+      
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-5 py-3 border-b border-gray-100">
           <p className="text-sm font-medium text-gray-700">Connect to more wholesalers</p>

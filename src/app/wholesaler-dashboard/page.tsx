@@ -6,11 +6,13 @@ import StatsGrid from "@/components/wholeselercomponents/StatsGrid";
 import FormFilter from "@/components/wholeselercomponents/FormFilter";
 import ProdductTable from "@/components/wholeselercomponents/productTable";
 import RetailerList from "@/components/wholeselercomponents/RetailerList";
+import WholesalerskeletonLoader from "@/components/WholesalerskeletonLoader";
 
 const WholeSalerDashboard = () => {
   const {
     user,
     products,
+    loading,
     handleAddOrUpdate,
     handleDelete,
     connections,
@@ -41,6 +43,7 @@ const WholeSalerDashboard = () => {
     setEditProduct(null);
     setShowForm(false);
   };
+  if (loading) return <WholesalerskeletonLoader/>
 
   return (
     <div className="min-h-screen bg-[#eaebed]">

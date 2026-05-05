@@ -54,7 +54,7 @@ const LoginPage = ({ role }: { role?: string }) => {
   return (
     <main className="min-h-screen bg-[#f0f4f5] flex items-center justify-center p-4">
       <div className="flex flex-col md:flex-row w-full max-w-4xl bg-white rounded-[30px] overflow-hidden shadow-2xl min-h-150">
-        {/* Left Side */}
+       
         <div className="relative w-full md:w-2/5 bg-[#006989] p-10 flex flex-col justify-center text-white">
           <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
           <div className="absolute -bottom-10 right-0 w-48 h-48 bg-white/10 rounded-full blur-xl" />
@@ -72,7 +72,7 @@ const LoginPage = ({ role }: { role?: string }) => {
           </div>
         </div>
 
-        {/* Right Side */}
+        
         <div className="w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-center bg-white">
           <header className="mb-6">
             <h1 className="text-3xl font-bold text-gray-800">

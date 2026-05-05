@@ -36,6 +36,7 @@ const useWholesaler = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]); // ← add
   const [allRetailers, setAllRetailers] = useState<Retailer[]>([]);
+    const [loading, setLoading] = useState(true)
 
   const refetchConnections = useCallback(async () => {
     if (!user?.id) return;
@@ -86,9 +87,15 @@ const useWholesaler = () => {
         .eq("role", "retailer");
       if (data) setAllRetailers(data as Retailer[]);
     };
-    fetchProducts();
-    fetchConnections(user.id);
-    fetchAllRetailers();
+   const loadAll = async () => {
+      setLoading(true);
+      await fetchProducts();
+      await fetchConnections(user.id);
+      await fetchAllRetailers();
+      setLoading(false);
+    };
+
+    loadAll();
   }, [user]);
 
   const refetchProducts = async (userId: string) => {
@@ -213,6 +220,7 @@ const useWholesaler = () => {
   return {
     user,
     products,
+    loading,
     connections,
     allRetailers,
     refetchProducts,
