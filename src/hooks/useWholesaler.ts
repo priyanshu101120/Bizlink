@@ -1,4 +1,4 @@
-import {useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import supabase from "../supabase/supabase";
 import { User } from "@supabase/supabase-js";
 
@@ -37,14 +37,14 @@ const useWholesaler = () => {
   const [connections, setConnections] = useState<Connection[]>([]); // ← add
   const [allRetailers, setAllRetailers] = useState<Retailer[]>([]);
 
-  const refetchConnections = async () => {
-  if (!user?.id) return;
-  const { data } = await supabase
-    .from("connections")
-    .select("*, profile:retailer_id(id, name)")
-    .eq("wholesaler_id", user.id);
-  if (data) setConnections(data as Connection[]);
-};
+  const refetchConnections = useCallback(async () => {
+    if (!user?.id) return;
+    const { data } = await supabase
+      .from("connections")
+      .select("*, profile:retailer_id(id, name)")
+      .eq("wholesaler_id", user.id);
+    if (data) setConnections(data as Connection[]);
+  }, [user]);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -60,7 +60,7 @@ const useWholesaler = () => {
     );
     return () => subscription.unsubscribe();
   }, []);
-
+  
   useEffect(() => {
     if (!user?.id) return;
     const fetchProducts = async () => {
@@ -74,10 +74,10 @@ const useWholesaler = () => {
     const fetchConnections = async (userId: string) => {
       const { data } = await supabase
         .from("connections")
-        .select("*, profile:retailer_id(id, name)") // retailer ki info
+        .select("*, profile:retailer_id(id, name)")
         .eq("wholesaler_id", userId);
       if (data) setConnections(data as Connection[]);
-    }
+    };
 
     const fetchAllRetailers = async () => {
       const { data } = await supabase
@@ -87,8 +87,8 @@ const useWholesaler = () => {
       if (data) setAllRetailers(data as Retailer[]);
     };
     fetchProducts();
-    fetchConnections(user.id); // ← add
-    fetchAllRetailers(); // ← add
+    fetchConnections(user.id);
+    fetchAllRetailers();
   }, [user]);
 
   const refetchProducts = async (userId: string) => {
@@ -151,7 +151,7 @@ const useWholesaler = () => {
       .delete()
       .eq("id", connectionId);
     if (error) return alert("Failed to disconnect: " + error.message);
-    await refetchConnections(); // ← add
+    await refetchConnections();
   };
   const connectToRetailer = async (retailerId: string) => {
     const alreadyConnected = connections.some(
@@ -165,9 +165,51 @@ const useWholesaler = () => {
       retailer_id: retailerId,
     });
     if (error) return alert("Failed to connect: " + error.message);
-    await refetchConnections(); // ← add
+    await refetchConnections();
   };
 
+  useEffect(() => {
+    if (!user?.id) return;
+
+   
+    const productChannel = supabase
+      .channel("wholesaler-products")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "products",
+          filter: `wholesaler_id=eq.${user.id}`,
+        },
+        () => {
+          refetchProducts(user.id);
+        },
+      )
+      .subscribe();
+
+   
+    const connectionChannel = supabase
+      .channel("wholesaler-connections")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "connections",
+          filter: `wholesaler_id=eq.${user.id}`,
+        },
+        () => {
+          refetchConnections();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(productChannel);
+      supabase.removeChannel(connectionChannel);
+    };
+  }, [user?.id,refetchConnections]);
   return {
     user,
     products,
