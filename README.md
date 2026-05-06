@@ -16,6 +16,10 @@
 </div>
 
 ---
+## 🎬 Demo
+
+![BizLink Demo](./screenshots/demo.gif)
+
 
 ## 📸 Screenshots
 
