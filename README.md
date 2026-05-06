@@ -19,20 +19,16 @@
 
 ## 📸 Screenshots
 
-> 🖼️ Add your screenshots here — drag and drop images into this section on GitHub
-
-## 📸 Screenshots
-
-| Wholesaler Dashboard | Retailer Dashboard |
-|----------------------|--------------------|
+| Wholesaler Dashboard                                            | Retailer Dashboard                                          |
+| --------------------------------------------------------------- | ----------------------------------------------------------- |
 | ![Wholesaler Dashboard](./screenshots/wholesaler-dashboard.png) | ![Retailer Dashboard](./screenshots/retailer-dashboard.png) |
 
-| Wholesaler Inventory | Retailer Inventory |
-|----------------------|--------------------|
+| Wholesaler Inventory                                            | Retailer Inventory                                          |
+| --------------------------------------------------------------- | ----------------------------------------------------------- |
 | ![Wholesaler Inventory](./screenshots/wholesaler-inventory.png) | ![Retailer Inventory](./screenshots/retailer-inventory.png) |
 
-| Login | Select Role |
-|-------|-------------|
+| Login                             | Select Role                                   |
+| --------------------------------- | --------------------------------------------- |
 | ![Login](./screenshots/login.png) | ![Select Role](./screenshots/select-role.png) |
 
 ---
@@ -50,26 +46,31 @@ No shared data. No polling delays. No backend team needed — built entirely by 
 ## ✨ Key Features
 
 ### 🏢 Multi-Tenant Architecture
+
 - Each wholesaler and retailer account operates in a **fully isolated environment**
 - Zero cross-tenant data exposure at the **database layer** using Supabase Row Level Security (RLS)
 - Every SQL query is scoped to the authenticated user — no application-level filtering hacks
 
 ### ⚡ Real-Time Inventory Sync
+
 - Powered by **Supabase Realtime subscriptions** (PostgreSQL LISTEN/NOTIFY)
 - Stock changes propagate **instantly** across all connected clients
 - No polling, no page refresh, no delay — changes appear live
 
 ### 🔐 Authentication & Authorization
+
 - Secure **email/password auth** via Supabase Auth
 - Session management with protected routes in Next.js
 - Role-aware UI — wholesalers and retailers see different views
 
 ### 📊 Inventory Management
+
 - Full **CRUD operations** for products and stock
 - Real-time stock level tracking
 - Clean dashboard with at-a-glance metrics
 
 ### 🎨 Modern, Responsive UI
+
 - Built with **Shadcn UI** components on top of **Tailwind CSS**
 - Fully responsive across desktop, tablet, and mobile
 - Clean, professional design system
@@ -78,15 +79,15 @@ No shared data. No polling delays. No backend team needed — built entirely by 
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Framework** | Next.js 15 (App Router) | Full-stack React framework, SSR, API routes |
-| **Database** | Supabase (PostgreSQL) | Relational DB with RLS policies |
-| **Auth** | Supabase Auth | Email/password authentication |
-| **Realtime** | Supabase Realtime | Live inventory subscriptions |
-| **Styling** | Tailwind CSS | Utility-first CSS |
-| **Components** | Shadcn UI | Accessible, composable UI components |
-| **Deployment** | Vercel | CI/CD and hosting |
+| Layer          | Technology              | Purpose                                     |
+| -------------- | ----------------------- | ------------------------------------------- |
+| **Framework**  | Next.js 15 (App Router) | Full-stack React framework, SSR, API routes |
+| **Database**   | Supabase (PostgreSQL)   | Relational DB with RLS policies             |
+| **Auth**       | Supabase Auth           | Email/password authentication               |
+| **Realtime**   | Supabase Realtime       | Live inventory subscriptions                |
+| **Styling**    | Tailwind CSS            | Utility-first CSS                           |
+| **Components** | Shadcn UI               | Accessible, composable UI components        |
+| **Deployment** | Vercel                  | CI/CD and hosting                           |
 
 ---
 
@@ -129,32 +130,38 @@ Every query is automatically scoped. Even if application code had a bug, the dat
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
 - A Supabase project ([create one free](https://supabase.com))
 
 ### 1. Clone the repository
+
 ```bash
 git clone https://github.com/priyanshu101120/Bizlink.git
 cd Bizlink
 ```
 
 ### 2. Install dependencies
+
 ```bash
 npm install
 ```
 
 ### 3. Set up environment variables
+
 ```bash
 cp .env.example .env.local
 ```
 
 Fill in your `.env.local`:
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 ### 4. Run the development server
+
 ```bash
 npm run dev
 ```
@@ -223,6 +230,6 @@ This project is open source and available under the [MIT License](LICENSE).
 
 **⭐ If you found this project interesting, please give it a star!**
 
-*Built with ❤️ using Next.js, Supabase, and Shadcn UI*
+_Built with ❤️ using Next.js, Supabase, and Shadcn UI_
 
 </div>
