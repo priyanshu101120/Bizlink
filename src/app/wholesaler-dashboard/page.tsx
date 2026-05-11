@@ -7,6 +7,7 @@ import FormFilter from "@/components/wholeselercomponents/FormFilter";
 import ProdductTable from "@/components/wholeselercomponents/productTable";
 import RetailerList from "@/components/wholeselercomponents/RetailerList";
 import WholesalerskeletonLoader from "@/components/WholesalerskeletonLoader";
+import OverviewTab from "@/components/wholeselercomponents/OverviewTab";
 
 const WholeSalerDashboard = () => {
   const {
@@ -68,21 +69,23 @@ const WholeSalerDashboard = () => {
         />
 
         <div className="px-4 md:px-6">
-          {activeTab === "inventory" ? (
-            <ProdductTable
-              products={products}
-              handleEditProduct={handleEditProduct}
-              handleDelete={handleDelete}
-            />
-          ) : (
-            <RetailerList
-              connections={connections}
-              allRetailers={allRetailers}
-              onConnect={connectToRetailer}
-              onDisconnect={disconnectRetailer}
-            />
-          )}
-        </div>
+  {activeTab === "overview" ? (
+    <OverviewTab products={products} />          // ← add this
+  ) : activeTab === "inventory" ? (
+    <ProdductTable
+      products={products}
+      handleEditProduct={handleEditProduct}
+      handleDelete={handleDelete}
+    />
+  ) : (
+    <RetailerList
+      connections={connections}
+      allRetailers={allRetailers}
+      onConnect={connectToRetailer}
+      onDisconnect={disconnectRetailer}
+    />
+  )}
+</div>
       </div>
     </div>
   );

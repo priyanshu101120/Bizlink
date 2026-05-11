@@ -19,10 +19,16 @@ type Props = {
     name: string,
     price: string,
     quantity: number,
-    editProduct: Props["editProduct"],
+    editProduct: Props["editProduct"]
   ) => Promise<void>;
   resetForm: () => void;
 };
+
+const TABS = [
+  { key: "overview", label: "Overview" },
+  { key: "inventory", label: "Inventory" },
+  { key: "Retailers", label: "Retailers" },
+];
 
 const FormFilter = ({
   activeTab,
@@ -42,31 +48,30 @@ const FormFilter = ({
   return (
     <div>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 px-4 md:px-6 gap-4">
-        <div className="flex bg-slate-200/50 p-1 rounded-lg">
-          <Button
-            variant={activeTab === "inventory" ? "default" : "ghost"}
-            className={activeTab === "inventory" ? "bg-[#006989]" : ""}
-            onClick={() => setActiveTab("inventory")}
-          >
-            Inventory
-          </Button>
-          <Button
-            variant={activeTab === "Retailers" ? "default" : "ghost"}
-            className={activeTab === "Retailers" ? "bg-[#006989]" : ""}
-            onClick={() => setActiveTab("Retailers")}
-          >
-            Retailers
-          </Button>
+        <div className="flex bg-slate-200/50 p-1 rounded-lg gap-1">
+          {TABS.map((tab) => (
+            <Button
+              key={tab.key}
+              variant={activeTab === tab.key ? "default" : "ghost"}
+              className={activeTab === tab.key ? "bg-[#006989]" : ""}
+              onClick={() => setActiveTab(tab.key)}
+            >
+              {tab.label}
+            </Button>
+          ))}
         </div>
-        <Button
-          onClick={() => setShowForm(true)}
-          className="w-full sm:w-auto bg-[#006989] hover:brightness-110 text-[#eaebed] font-bold py-2.5 px-6 rounded-xl shadow-lg shadow-blue-900/10 transition-all active:scale-95"
-        >
-          + Add New Product
-        </Button>
+
+        {activeTab === "inventory" && (
+          <Button
+            onClick={() => setShowForm(true)}
+            className="w-full sm:w-auto bg-[#006989] hover:brightness-110 text-[#eaebed] font-bold py-2.5 px-6 rounded-xl shadow-lg shadow-blue-900/10 transition-all active:scale-95"
+          >
+            + Add New Product
+          </Button>
+        )}
       </div>
 
-      {showForm && (
+      {showForm && activeTab === "inventory" && (
         <div className="bg-white border border-[#006989] rounded-2xl p-5 md:p-6 mx-4 md:mx-6 mb-8 shadow-xl animate-in fade-in slide-in-from-top-4 duration-300">
           <h3 className="font-bold text-gray-800 mb-4 text-lg">
             {editProduct ? "Edit Product Details" : "Enter New Product"}
@@ -77,8 +82,8 @@ const FormFilter = ({
                 Product Name
               </label>
               <Input
-                placeholder="Search..."
-                className="border border-[#006989] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006989] "
+                placeholder="e.g. Wireless Mouse"
+                className="border border-[#006989] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006989]"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -90,7 +95,7 @@ const FormFilter = ({
               </label>
               <Input
                 placeholder="0"
-                className="border border-[#006989] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006989] "
+                className="border border-[#006989] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006989]"
                 type="number"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
@@ -102,7 +107,7 @@ const FormFilter = ({
               </label>
               <Input
                 placeholder="0.00"
-                className="border border-[#006989] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006989] "
+                className="border border-[#006989] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006989]"
                 type="number"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
@@ -118,12 +123,7 @@ const FormFilter = ({
             </Button>
             <Button
               onClick={async () => {
-                await handleAddOrUpdate(
-                  name,
-                  price,
-                  Number(quantity),
-                  editProduct,
-                );
+                await handleAddOrUpdate(name, price, Number(quantity), editProduct);
                 resetForm();
               }}
               className="w-full sm:w-auto bg-[#006989] hover:brightness-110 text-[#eaebed] font-bold py-2.5 px-8 rounded-xl shadow-md transition-all active:scale-95"
