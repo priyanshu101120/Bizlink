@@ -1,20 +1,20 @@
- 'use client'
-import supabase from "@/supabase/supabase"
-import { User } from "@supabase/supabase-js"
+"use client";
+import supabase from "@/supabase/supabase";
+import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const useAuth = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
 
-  const [user, setUser] = useState<User | null>(null)
-  const router = useRouter()
+  useEffect(() => {
+    let isMounted = true;
 
-  useEffect(()=>{
-    let isMounted = true; // Flag to track if the component is still mounted
-
-   const loadUser = async () => {
-    const {data, error}= await supabase.auth.getUser()
-    if (error) {
+    const loadUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) {
         console.log("error load user", error.message);
         if (isMounted) setUser(null);
         return;
@@ -22,8 +22,8 @@ const useAuth = () => {
       if (isMounted) {
         setUser(data.user);
       }
-   }
-    loadUser()
+    };
+    loadUser();
 
     const {
       data: { subscription },
@@ -38,36 +38,70 @@ const useAuth = () => {
   }, []);
 
   const Login = async (email: string, password: string): Promise<void> => {
-    const { data,error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error || !data.user) {
-      throw new Error(error?.message)
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error || !data.user) {
+        toast.error(error?.message || "Login failed");
+        throw new Error(error?.message);
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", data.user.id)
+        .single();
+
+      if (!profile) {
+        toast.error("User profile not found");
+        throw new Error("User profile not found");
+      }
+
+      toast.success("Login successful! Welcome back 👋");
+
+      if (profile.role === "retailer") {
+        router.push("/retailer-dashboard");
+      } else if (profile.role === "wholesaler") {
+        router.push("/wholesaler-dashboard");
+      }
+    } catch (err) {
+      throw err;
     }
+  };
 
-    const {data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single()
-
-    if(!profile){
-      throw new Error('User profile not found')
-    }
-
-    if(profile.role === 'retailer'){
-      router.push('/retailer-dashboard')
-    } else if(profile.role === 'wholesaler'){
-      router.push('/wholesaler-dashboard')
-    }
-  }  
-
-  const SignUp = async (name: string, email: string, password: string, role: string): Promise<void> => {
-    const {error} = await supabase.auth.signUp ({email, password,options: {
-      data: {
-        name, role}}})
+  const SignUp = async (
+    name: string,
+    email: string,
+    password: string,
+    role: string,
+  ): Promise<void> => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name,
+          role,
+        },
+      },
+    });
     if (error) {
-      throw new Error(error.message)
+      toast.error(error.message);
+      throw new Error(error.message);
     }
-  }
+    toast.success("Account created! Please verify your email 📧");
+  };
 
   const Logout = async (): Promise<void> => {
     const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    if (error) {
+      toast.error("Logout failed: " + error.message);
+      throw error;
+    }
+    toast.success("Logged out successfully");
     router.push("/");
   };
 
@@ -78,7 +112,10 @@ const useAuth = () => {
         redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
-    if (error) throw error;
+    if (error) {
+      toast.error("Login with Google failed: " + error.message);
+      throw error;
+    }
   };
 
   return { user, Login, SignUp, Logout, LoginWithGoogle };

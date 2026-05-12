@@ -138,6 +138,7 @@ const productTable = ({ products, handleEditProduct, handleDelete }: Props) => {
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
+                            className="bg-red-500 text-white hover:bg-red-600 focus:ring-red-500"
                               onClick={() => handleDelete(product.id)}
                             >
                               Continue

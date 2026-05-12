@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import supabase from "../supabase/supabase";
 import { User } from "@supabase/supabase-js";
-import { toast } from "sonner"
+import { toast } from "sonner";
 
 export interface Product {
   id: string;
@@ -114,7 +114,8 @@ const useWholesaler = () => {
     quantity: number,
     editProduct: Product | null,
   ) => {
-    if (!name || !price || !quantity) return toast.error("Please fill all fields");
+    if (!name || !price || !quantity)
+      return toast.error("Please fill all fields");
     if (!user) return toast.error("User not found");
     if (editProduct) {
       const { error } = await supabase
@@ -129,6 +130,7 @@ const useWholesaler = () => {
         return toast.error(
           "Failed to update product. Please try again." + error.message,
         );
+      toast.success("Product updated successfully");
     } else {
       const { error } = await supabase.from("products").insert({
         name,
@@ -140,6 +142,7 @@ const useWholesaler = () => {
         return toast.error(
           "Failed to add product. Please try again." + error.message,
         );
+      toast.success("Product added successfully");
     }
     await refetchProducts(user.id);
   };
@@ -150,6 +153,7 @@ const useWholesaler = () => {
       return toast.error(
         "Failed to delete product. Please try again." + error.message,
       );
+    toast.success("Product deleted successfully");
     await refetchProducts(user.id);
   };
 
@@ -159,13 +163,16 @@ const useWholesaler = () => {
       .delete()
       .eq("id", connectionId);
     if (error) return toast.error("Failed to disconnect: " + error.message);
+    toast.success("Retailer disconnected successfully");
     await refetchConnections();
   };
   const connectToRetailer = async (retailerId: string) => {
     const alreadyConnected = connections.some(
       (c) => c.retailer_id === retailerId,
     );
-    if (alreadyConnected) return toast.error("Already connected to this retailer");
+    if (alreadyConnected)
+      return toast.error("Already connected to this retailer");
+
     if (!user) return toast.error("User not found");
 
     const { error } = await supabase.from("connections").insert({
@@ -173,6 +180,7 @@ const useWholesaler = () => {
       retailer_id: retailerId,
     });
     if (error) return toast.error("Failed to connect: " + error.message);
+    toast.success("Retailer connected successfully");
     await refetchConnections();
   };
 
@@ -192,6 +200,7 @@ const useWholesaler = () => {
         (payload) => {
           if (payload.eventType === "INSERT") {
             setProducts((prev) => [payload.new as Product, ...prev]);
+            toast.success(`Product "${payload.new.name}" added successfully`);
           }
           if (payload.eventType === "UPDATE") {
             setProducts((prev) =>
@@ -199,9 +208,11 @@ const useWholesaler = () => {
                 p.id === payload.new.id ? (payload.new as Product) : p,
               ),
             );
+            toast.success(`Product "${payload.new.name}" updated successfully`);
           }
           if (payload.eventType === "DELETE") {
             setProducts((prev) => prev.filter((p) => p.id !== payload.old.id));
+            toast.success("Product deleted successfully");
           }
         },
       )
