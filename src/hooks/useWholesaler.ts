@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import supabase from "../supabase/supabase";
 import { User } from "@supabase/supabase-js";
+import { toast } from "sonner"
 
 export interface Product {
   id: string;
@@ -36,7 +37,7 @@ const useWholesaler = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]); // ← add
   const [allRetailers, setAllRetailers] = useState<Retailer[]>([]);
-    const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
 
   const refetchConnections = useCallback(async () => {
     if (!user?.id) return;
@@ -61,7 +62,7 @@ const useWholesaler = () => {
     );
     return () => subscription.unsubscribe();
   }, []);
-  
+
   useEffect(() => {
     if (!user?.id) return;
     const fetchProducts = async () => {
@@ -87,7 +88,7 @@ const useWholesaler = () => {
         .eq("role", "retailer");
       if (data) setAllRetailers(data as Retailer[]);
     };
-   const loadAll = async () => {
+    const loadAll = async () => {
       setLoading(true);
       await fetchProducts();
       await fetchConnections(user.id);
@@ -113,8 +114,8 @@ const useWholesaler = () => {
     quantity: number,
     editProduct: Product | null,
   ) => {
-    if (!name || !price || !quantity) return alert("Please fill all fields");
-    if (!user) return alert("User not found");
+    if (!name || !price || !quantity) return toast.error("Please fill all fields");
+    if (!user) return toast.error("User not found");
     if (editProduct) {
       const { error } = await supabase
         .from("products")
@@ -125,7 +126,7 @@ const useWholesaler = () => {
         })
         .eq("id", editProduct.id);
       if (error)
-        return alert(
+        return toast.error(
           "Failed to update product. Please try again." + error.message,
         );
     } else {
@@ -136,7 +137,7 @@ const useWholesaler = () => {
         wholesaler_id: user.id,
       });
       if (error)
-        return alert(
+        return toast.error(
           "Failed to add product. Please try again." + error.message,
         );
     }
@@ -146,7 +147,7 @@ const useWholesaler = () => {
     if (!user) return;
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error)
-      return alert(
+      return toast.error(
         "Failed to delete product. Please try again." + error.message,
       );
     await refetchProducts(user.id);
@@ -157,28 +158,27 @@ const useWholesaler = () => {
       .from("connections")
       .delete()
       .eq("id", connectionId);
-    if (error) return alert("Failed to disconnect: " + error.message);
+    if (error) return toast.error("Failed to disconnect: " + error.message);
     await refetchConnections();
   };
   const connectToRetailer = async (retailerId: string) => {
     const alreadyConnected = connections.some(
       (c) => c.retailer_id === retailerId,
     );
-    if (alreadyConnected) return alert("Already connected to this retailer");
-    if (!user) return alert("User not found");
+    if (alreadyConnected) return toast.error("Already connected to this retailer");
+    if (!user) return toast.error("User not found");
 
     const { error } = await supabase.from("connections").insert({
       wholesaler_id: user.id,
       retailer_id: retailerId,
     });
-    if (error) return alert("Failed to connect: " + error.message);
+    if (error) return toast.error("Failed to connect: " + error.message);
     await refetchConnections();
   };
 
   useEffect(() => {
     if (!user?.id) return;
 
-   
     const productChannel = supabase
       .channel("wholesaler-products")
       .on(
@@ -189,13 +189,24 @@ const useWholesaler = () => {
           table: "products",
           filter: `wholesaler_id=eq.${user.id}`,
         },
-        () => {
-          refetchProducts(user.id);
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            setProducts((prev) => [payload.new as Product, ...prev]);
+          }
+          if (payload.eventType === "UPDATE") {
+            setProducts((prev) =>
+              prev.map((p) =>
+                p.id === payload.new.id ? (payload.new as Product) : p,
+              ),
+            );
+          }
+          if (payload.eventType === "DELETE") {
+            setProducts((prev) => prev.filter((p) => p.id !== payload.old.id));
+          }
         },
       )
       .subscribe();
 
-   
     const connectionChannel = supabase
       .channel("wholesaler-connections")
       .on(
@@ -216,7 +227,7 @@ const useWholesaler = () => {
       supabase.removeChannel(productChannel);
       supabase.removeChannel(connectionChannel);
     };
-  }, [user?.id,refetchConnections]);
+  }, [user?.id, refetchConnections]);
   return {
     user,
     products,
