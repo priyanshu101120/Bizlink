@@ -1,74 +1,56 @@
 "use client";
-import supabase from "@/supabase/supabase";
-import { User } from "@supabase/supabase-js";
+import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: "RETAILER" | "WHOLESALER";
+}
+
 const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     let isMounted = true;
 
     const loadUser = async () => {
-      const { data, error } = await supabase.auth.getUser();
-      if (error) {
-        console.log("error load user", error.message);
+      try {
+        const { data } = await api.get("/auth/me");
+        if (isMounted) setUser(data.user);
+      } catch (error) {
         if (isMounted) setUser(null);
-        return;
-      }
-      if (isMounted) {
-        setUser(data.user);
+      } finally {
+        if (isMounted) setLoading(false);
       }
     };
     loadUser();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
     return () => {
       isMounted = false;
-      subscription.unsubscribe();
     };
   }, []);
 
   const Login = async (email: string, password: string): Promise<void> => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error || !data.user) {
-        toast.error(error?.message || "Login failed");
-        throw new Error(error?.message);
-      }
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", data.user.id)
-        .single();
-
-      if (!profile) {
-        toast.error("User profile not found");
-        throw new Error("User profile not found");
-      }
-
+      const { data } = await api.post("/auth/login", { email, password });
+      setUser(data.user);
       toast.success("Login successful! Welcome back 👋");
 
-      if (profile.role === "retailer") {
+      if (data.user.role === "RETAILER") {
         router.push("/retailer-dashboard");
-      } else if (profile.role === "wholesaler") {
+      } else if (data.user.role === "WHOLESALER") {
         router.push("/wholesaler-dashboard");
       }
-    } catch (err) {
-      throw err;
+    } catch (err: any) {
+      const message = err.response?.data?.message || "Login failed";
+      toast.error(message);
+      throw new Error(message);
     }
   };
 
@@ -76,49 +58,31 @@ const useAuth = () => {
     name: string,
     email: string,
     password: string,
-    role: string,
+    role: "RETAILER" | "WHOLESALER"
   ): Promise<void> => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name,
-          role,
-        },
-      },
-    });
-    if (error) {
-      toast.error(error.message);
-      throw new Error(error.message);
+    try {
+      await api.post("/auth/register", { name, email, password, role });
+      toast.success("Account created! Please log in");
+    } catch (err: any) {
+      const message = err.response?.data?.message || "Signup failed";
+      toast.error(message);
+      throw new Error(message);
     }
-    toast.success("Account created! Please verify your email 📧");
   };
 
   const Logout = async (): Promise<void> => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error("Logout failed: " + error.message);
-      throw error;
-    }
-    toast.success("Logged out successfully");
-    router.push("/");
-  };
-
-  const LoginWithGoogle = async (): Promise<void> => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    if (error) {
-      toast.error("Login with Google failed: " + error.message);
-      throw error;
+    try {
+      await api.post("/auth/logout");
+      setUser(null);
+      toast.success("Logged out successfully");
+      router.push("/");
+    } catch (err: any) {
+      toast.error("Logout failed: " + (err.response?.data?.message || err.message));
+      throw err;
     }
   };
 
-  return { user, Login, SignUp, Logout, LoginWithGoogle };
+  return { user, loading, Login, SignUp, Logout };
 };
 
 export default useAuth;

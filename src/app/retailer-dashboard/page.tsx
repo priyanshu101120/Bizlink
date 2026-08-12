@@ -34,7 +34,7 @@ const RetailerDashboard = () => {
 
     if (selectedWholesalerId) {
       baseProducts = baseProducts.filter(
-        (p) => p.wholesaler_id === selectedWholesalerId,
+        (p) => p.wholesalerId === selectedWholesalerId,
       );
     }
     if (searchQuery) {
@@ -45,11 +45,11 @@ const RetailerDashboard = () => {
     return baseProducts;
   }, [selectedWholesalerId, products, searchQuery]);
 
-  const filteredWholesalers = allWholesalers.filter(
-    (w) =>
-      w.name.includes(searchQuery.toLowerCase()) &&
-      !connections.some((c) => c.wholesaler_id === w.id),
-  );
+  // const filteredWholesalers = allWholesalers.filter(
+  //   (w) =>
+  //     w.name.includes(searchQuery.toLowerCase()) &&
+  //     !connections.some((c) => c.wholesalerId === w.id),
+  // );
 
   const handleLogout = async () => {
     try {

@@ -20,7 +20,7 @@ export default function RetailerNav({
   setShowNotification,
   onLogout,
 }: Props) {
-  const unreadedNotifications = notification.filter((n) => !n.read).length;
+  // const unreadedNotifications = notification.filter((n) => !n.read).length;
 
   const markNotificationsAsRead = () => {
     setNotification((prev) => prev.map((n) => ({ ...n, read: true })));
@@ -62,11 +62,11 @@ export default function RetailerNav({
                 d="M15 17h5l-1.405-2.405A2.032 2.032 0 0118 13V9a6 6 0 10-12 0v4c0 .386-.149.735-.405 1.05L4 17h5m6 0a3 3 0 11-6 0h6z"
               />
             </svg>
-            {unreadedNotifications > 0 && (
+            {/* {unreadedNotifications > 0 && (
               <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
                 {unreadedNotifications}
               </span>
-            )}
+            )} */}
           </button>
 
           {showNotification && (

@@ -136,7 +136,7 @@ const LandingPage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleRoleSelect = (role: "retailer" | "wholesaler") => {
+  const handleRoleSelect = (role: "RETAILER" | "WHOLESALER") => {
     router.push(`/login?role=${role}`);
   };
 
@@ -571,7 +571,7 @@ const LandingPage = () => {
                 ))}
               </ul>
               <Button
-                onClick={() => handleRoleSelect("wholesaler")}
+                onClick={() => handleRoleSelect("WHOLESALER")}
                 className="mt-8 w-full bg-[#006989] hover:bg-[#005a75] text-white font-bold rounded-xl gap-2 group"
               >
                 Join as Wholesaler
@@ -614,7 +614,7 @@ const LandingPage = () => {
                 ))}
               </ul>
               <Button
-                onClick={() => handleRoleSelect("retailer")}
+                onClick={() => handleRoleSelect("RETAILER")}
                 variant="outline"
                 className="mt-8 w-full border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl gap-2 group"
               >
@@ -816,7 +816,7 @@ const LandingPage = () => {
 
             <div className="space-y-3">
               <button
-                onClick={() => handleRoleSelect("wholesaler")}
+                onClick={() => handleRoleSelect("WHOLESALER")}
                 className="group w-full flex items-center gap-5 p-5 rounded-2xl border border-white/10 hover:border-[#006989]/60 hover:bg-[#006989]/5 transition-all text-left"
               >
                 <div className="bg-[#006989]/20 p-3.5 rounded-xl group-hover:bg-[#006989] transition-colors">
@@ -840,7 +840,7 @@ const LandingPage = () => {
               </button>
 
               <button
-                onClick={() => handleRoleSelect("retailer")}
+                onClick={() => handleRoleSelect("RETAILER")}
                 className="group w-full flex items-center gap-5 p-5 rounded-2xl border border-white/10 hover:border-[#006989]/60 hover:bg-[#006989]/5 transition-all text-left"
               >
                 <div className="bg-white/5 p-3.5 rounded-xl group-hover:bg-[#006989] transition-colors">

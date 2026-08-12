@@ -1,244 +1,127 @@
+"use client";
 import { useCallback, useEffect, useState } from "react";
-import supabase from "../supabase/supabase";
-import { User } from "@supabase/supabase-js";
+import api from "@/lib/api";
 import { toast } from "sonner";
+import useAuth from "./useAuth";
 
 export interface Product {
   id: string;
   name: string;
-  description: string;
-  price: number;
-  created_at: string;
+  price: number | null;
   quantity: number;
-  wholesaler_id: string;
-  profile: {
-    name: string;
-  };
-}
-export interface Retailer {
-  id: string;
-  name: string;
-  email?: string;
-  role: string;
+  createdAt: string;
+  wholesalerId: string;
 }
 
 export interface Connection {
   id: string;
-  retailer_id: string;
-  wholesaler_id: string;
-  profile: {
-    id: string;
-    name: string;
-  };
+  retailerId: string;
+  wholesalerId: string;
+  retailer: { id: string; name: string };
+}
+
+export interface Retailer {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
 }
 
 const useWholesaler = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
-  const [connections, setConnections] = useState<Connection[]>([]); // ← add
+  const [connections, setConnections] = useState<Connection[]>([]);
   const [allRetailers, setAllRetailers] = useState<Retailer[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const refetchProducts = useCallback(async () => {
+    const { data } = await api.get("/products/mine");
+    setProducts(data.products);
+  }, []);
+
   const refetchConnections = useCallback(async () => {
-    if (!user?.id) return;
-    const { data } = await supabase
-      .from("connections")
-      .select("*, profile:retailer_id(id, name)")
-      .eq("wholesaler_id", user.id);
-    if (data) setConnections(data as Connection[]);
-  }, [user]);
+    const { data } = await api.get("/connections/mine");
+    setConnections(data.connections);
+  }, []);
 
-  useEffect(() => {
-    const loadUser = async () => {
-      const { data } = await supabase.auth.getSession();
-      setUser(data.session?.user ?? null);
-    };
-    loadUser();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) =>
-      setUser(session?.user ?? null),
-    );
-    return () => subscription.unsubscribe();
+  const fetchAllRetailers = useCallback(async () => {
+    const { data } = await api.get("/users/retailers");
+    setAllRetailers(data.retailers);
   }, []);
 
   useEffect(() => {
-    if (!user?.id) return;
-    const fetchProducts = async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("wholesaler_id", user.id)
-        .order("created_at", { ascending: false });
-      if (!error && data) setProducts(data as Product[]);
-    };
-    const fetchConnections = async (userId: string) => {
-      const { data } = await supabase
-        .from("connections")
-        .select("*, profile:retailer_id(id, name)")
-        .eq("wholesaler_id", userId);
-      if (data) setConnections(data as Connection[]);
-    };
-
-    const fetchAllRetailers = async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("id, name, role")
-        .eq("role", "retailer");
-      if (data) setAllRetailers(data as Retailer[]);
-    };
+    if (!user?.id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLoading(false);
+      return;
+    }
     const loadAll = async () => {
       setLoading(true);
-      await fetchProducts();
-      await fetchConnections(user.id);
-      await fetchAllRetailers();
+      await Promise.all([refetchProducts(), refetchConnections(), fetchAllRetailers()]);
       setLoading(false);
     };
-
     loadAll();
-  }, [user]);
-
-  const refetchProducts = async (userId: string) => {
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .eq("wholesaler_id", userId)
-      .order("created_at", { ascending: false });
-    if (!error && data) setProducts(data as Product[]);
-  };
+  }, [user?.id, refetchProducts, refetchConnections, fetchAllRetailers]);
 
   const handleAddOrUpdate = async (
     name: string,
     price: string,
     quantity: number,
-    editProduct: Product | null,
+    editProduct: Product | null
   ) => {
-    if (!name || !price || !quantity)
-      return toast.error("Please fill all fields");
-    if (!user) return toast.error("User not found");
-    if (editProduct) {
-      const { error } = await supabase
-        .from("products")
-        .update({
+    if (!name || !price || !quantity) return toast.error("Please fill all fields");
+    try {
+      if (editProduct) {
+        await api.put(`/products/${editProduct.id}`, {
           name,
           price: parseFloat(price),
           quantity: Number(quantity),
-        })
-        .eq("id", editProduct.id);
-      if (error)
-        return toast.error(
-          "Failed to update product. Please try again." + error.message,
-        );
-      toast.success("Product updated successfully");
-    } else {
-      const { error } = await supabase.from("products").insert({
-        name,
-        price: parseFloat(price),
-        quantity: Number(quantity),
-        wholesaler_id: user.id,
-      });
-      if (error)
-        return toast.error(
-          "Failed to add product. Please try again." + error.message,
-        );
-      toast.success("Product added successfully");
+        });
+        toast.success("Product updated successfully");
+      } else {
+        await api.post("/products", {
+          name,
+          price: parseFloat(price),
+          quantity: Number(quantity),
+        });
+        toast.success("Product added successfully");
+      }
+      await refetchProducts();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Something went wrong");
     }
-    await refetchProducts(user.id);
   };
+
   const handleDelete = async (id: string) => {
-    if (!user) return;
-    const { error } = await supabase.from("products").delete().eq("id", id);
-    if (error)
-      return toast.error(
-        "Failed to delete product. Please try again." + error.message,
-      );
-    toast.success("Product deleted successfully");
-    await refetchProducts(user.id);
+    try {
+      await api.delete(`/products/${id}`);
+      toast.success("Product deleted successfully");
+      await refetchProducts();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to delete product");
+    }
+  };
+
+  const connectToRetailer = async (retailerId: string) => {
+    try {
+      await api.post("/connections", { targetUserId: retailerId });
+      toast.success("Retailer connected successfully");
+      await refetchConnections();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to connect");
+    }
   };
 
   const disconnectRetailer = async (connectionId: string) => {
-    const { error } = await supabase
-      .from("connections")
-      .delete()
-      .eq("id", connectionId);
-    if (error) return toast.error("Failed to disconnect: " + error.message);
-    toast.success("Retailer disconnected successfully");
-    await refetchConnections();
-  };
-  const connectToRetailer = async (retailerId: string) => {
-    const alreadyConnected = connections.some(
-      (c) => c.retailer_id === retailerId,
-    );
-    if (alreadyConnected)
-      return toast.error("Already connected to this retailer");
-
-    if (!user) return toast.error("User not found");
-
-    const { error } = await supabase.from("connections").insert({
-      wholesaler_id: user.id,
-      retailer_id: retailerId,
-    });
-    if (error) return toast.error("Failed to connect: " + error.message);
-    toast.success("Retailer connected successfully");
-    await refetchConnections();
+    try {
+      await api.delete(`/connections/${connectionId}`);
+      toast.success("Retailer disconnected successfully");
+      await refetchConnections();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to disconnect");
+    }
   };
 
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const productChannel = supabase
-      .channel("wholesaler-products")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "products",
-          filter: `wholesaler_id=eq.${user.id}`,
-        },
-        (payload) => {
-          if (payload.eventType === "INSERT") {
-            setProducts((prev) => [payload.new as Product, ...prev]);
-            toast.success(`Product "${payload.new.name}" added successfully`);
-          }
-          if (payload.eventType === "UPDATE") {
-            setProducts((prev) =>
-              prev.map((p) =>
-                p.id === payload.new.id ? (payload.new as Product) : p,
-              ),
-            );
-            toast.success(`Product "${payload.new.name}" updated successfully`);
-          }
-          if (payload.eventType === "DELETE") {
-            setProducts((prev) => prev.filter((p) => p.id !== payload.old.id));
-            toast.success("Product deleted successfully");
-          }
-        },
-      )
-      .subscribe();
-
-    const connectionChannel = supabase
-      .channel("wholesaler-connections")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "connections",
-          filter: `wholesaler_id=eq.${user.id}`,
-        },
-        () => {
-          refetchConnections();
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(productChannel);
-      supabase.removeChannel(connectionChannel);
-    };
-  }, [user?.id, refetchConnections]);
   return {
     user,
     products,

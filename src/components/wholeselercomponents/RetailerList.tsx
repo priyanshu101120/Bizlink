@@ -1,4 +1,4 @@
-import { Connection, Retailer } from "@/hooks/useWholesaler";
+import { Connection} from "@/hooks/useWholesaler";
 
 type Props = {
   connections: Connection[];
@@ -14,7 +14,7 @@ const RetailerList = ({
   onDisconnect,
 }: Props) => {
   const unconnectedRetailers = allRetailers.filter(
-    (r) => !connections.some((c) => c.retailer_id === r.id),
+    (r) => !connections.some((c) => c.retailerId === r.id),
   );
   return (
     <div className="space-y-3">
@@ -32,11 +32,11 @@ const RetailerList = ({
             >
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-medium text-sm">
-                  {conn.profile.name.charAt(0).toUpperCase()}
+                  {conn.retailer.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-800">
-                    {conn.profile.name}
+                    {conn.retailer.name}
                   </p>
                   <p className="text-xs text-gray-500">Connected</p>
                 </div>
