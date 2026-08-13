@@ -5,7 +5,6 @@ import {
   ArrowRight,
   Store,
   Warehouse,
-  X,
   RefreshCw,
   BarChart3,
   CheckCircle,
@@ -21,7 +20,6 @@ import {
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
 
 const useCounter = (end: number, duration = 2000, start = false) => {
   const [count, setCount] = useState(0);
@@ -55,7 +53,6 @@ const useInView = (threshold = 0.2) => {
   return { ref, inView };
 };
 
-
 const StatCard = ({
   value,
   suffix,
@@ -80,51 +77,50 @@ const StatCard = ({
 };
 
 const ReivewCard = [
-              {
-                icon: Users,
-                title: "Connection Network",
-                desc: "Wholesalers and retailers connect directly — no middlemen, no commission.",
-              },
-              {
-                icon: BarChart3,
-                title: "Demand Analytics",
-                desc: "Track which products retailers browse most to forecast demand accurately.",
-              },
-              {
-                icon: Package,
-                title: "Inventory Dashboard",
-                desc: "Full inventory control — add, edit, delete products in seconds.",
-              },
-              {
-                icon: Globe,
-                title: "Role-Based Access",
-                desc: "Separate dashboards for wholesalers and retailers, built for each workflow.",
-              },
-            ]
+  {
+    icon: Users,
+    title: "Connection Network",
+    desc: "Wholesalers and retailers connect directly — no middlemen, no commission.",
+  },
+  {
+    icon: BarChart3,
+    title: "Demand Analytics",
+    desc: "Track which products retailers browse most to forecast demand accurately.",
+  },
+  {
+    icon: Package,
+    title: "Inventory Dashboard",
+    desc: "Full inventory control — add, edit, delete products in seconds.",
+  },
+  {
+    icon: Globe,
+    title: "Role-Based Access",
+    desc: "Separate dashboards for wholesalers and retailers, built for each workflow.",
+  },
+];
 
-            const Steps =[
-                {
-                  step: "01",
-                  title: "Sign up & pick your role",
-                  desc: "Create your account as a Wholesaler or Retailer. Your dashboard is instantly configured for your workflow — inventory management for wholesalers, product discovery for retailers.",
-                  icon: Users,
-                },
-                {
-                  step: "02",
-                  title: "Connect with your partners",
-                  desc: "Wholesalers list their business. Retailers browse and send connection requests. Once connected, the real-time inventory feed goes live — instantly.",
-                  icon: Globe,
-                },
-                {
-                  step: "03",
-                  title: "Sync in real-time, forever",
-                  desc: "Every product update, stock change, or price edit by the wholesaler reflects instantly on the retailer's dashboard. No delays, no emails, no phone calls.",
-                  icon: RefreshCw,
-                },
-              ]
+const Steps = [
+  {
+    step: "01",
+    title: "Sign up & pick your role",
+    desc: "Create your account as a Wholesaler or Retailer. Your dashboard is instantly configured for your workflow — inventory management for wholesalers, product discovery for retailers.",
+    icon: Users,
+  },
+  {
+    step: "02",
+    title: "Connect with your partners",
+    desc: "Wholesalers list their business. Retailers browse and send connection requests. Once connected, the real-time inventory feed goes live — instantly.",
+    icon: Globe,
+  },
+  {
+    step: "03",
+    title: "Sync in real-time, forever",
+    desc: "Every product update, stock change, or price edit by the wholesaler reflects instantly on the retailer's dashboard. No delays, no emails, no phone calls.",
+    icon: RefreshCw,
+  },
+];
 
 const LandingPage = () => {
-  const [showModal, setShowModal] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { ref: statsRef, inView: statsInView } = useInView();
@@ -137,12 +133,11 @@ const LandingPage = () => {
   }, []);
 
   const handleRoleSelect = (role: "RETAILER" | "WHOLESALER") => {
-    router.push(`/login?role=${role}`);
+    router.push(`/login?role=${role}&mode=signup`);
   };
 
   return (
     <div className="min-h-screen bg-[#080c10] text-white selection:bg-[#006989] selection:text-white overflow-x-hidden">
-      
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-[#080c10]/90 backdrop-blur-xl border-b border-white/5" : "bg-transparent"}`}
       >
@@ -152,7 +147,6 @@ const LandingPage = () => {
               <Zap size={18} fill="white" className="text-white" />
             </div>
             <span className="text-lg font-black tracking-tighter">BizLink</span>
-           
           </div>
 
           <div className="hidden md:flex items-center gap-8 text-sm text-slate-400">
@@ -174,12 +168,12 @@ const LandingPage = () => {
             <Button
               variant="ghost"
               className="text-slate-400 hover:text-white text-sm"
-              onClick={() => setShowModal(true)}
+              onClick={() => router.push("/login")}
             >
               Sign in
             </Button>
             <Button
-              onClick={() => setShowModal(true)}
+              onClick={() => router.push("/login?mode=signup")}
               className="bg-white text-[#080c10] hover:bg-slate-200 font-bold text-sm px-5 rounded-xl"
             >
               Get Started
@@ -211,10 +205,7 @@ const LandingPage = () => {
               How it works
             </a>
             <Button
-              onClick={() => {
-                setShowModal(true);
-                setMobileMenu(false);
-              }}
+              onClick={() => router.push("/login?mode=signup")}
               className="bg-[#006989] text-white w-full"
             >
               Get Started
@@ -223,14 +214,11 @@ const LandingPage = () => {
         )}
       </nav>
 
-   
       <section className="relative pt-36 pb-28 px-6 text-center overflow-hidden">
-      
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-200 h-125 bg-[#006989]/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute top-40 left-1/4 w-75 h-75 bg-[#006989]/5 rounded-full blur-[80px] pointer-events-none" />
 
         <div className="relative max-w-5xl mx-auto">
-          
           <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full mb-8 text-sm">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -258,10 +246,10 @@ const LandingPage = () => {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <Button
-              onClick={() => setShowModal(true)}
+              onClick={() => router.push("/login?mode=signup")}
               className="bg-[#006989] hover:bg-[#005a75] text-white px-8 py-6 text-base font-bold rounded-xl gap-2 group shadow-lg shadow-[#006989]/25"
             >
-               Get Started
+              Get Started
               <ArrowRight
                 size={18}
                 className="group-hover:translate-x-1 transition-transform"
@@ -281,14 +269,12 @@ const LandingPage = () => {
             </Button>
           </div>
 
-         
           <div className="relative mx-auto max-w-4xl">
             <div
               className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-[#080c10] z-10 pointer-events-none"
               style={{ top: "60%" }}
             />
             <div className="bg-[#0d1117] border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/50">
-              
               <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 bg-[#0a0e14]">
                 <div className="w-3 h-3 rounded-full bg-red-500/60" />
                 <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
@@ -299,7 +285,7 @@ const LandingPage = () => {
                   Live
                 </div>
               </div>
-             
+
               <div className="p-6 grid grid-cols-4 gap-3">
                 {[
                   { label: "Total Products", val: "248", color: "text-white" },
@@ -315,7 +301,7 @@ const LandingPage = () => {
                     <p className={`text-2xl font-black ${s.color}`}>{s.val}</p>
                   </div>
                 ))}
-                
+
                 <div className="col-span-4 mt-2 bg-white/5 rounded-xl border border-white/5 overflow-hidden">
                   <div className="grid grid-cols-4 px-4 py-2 border-b border-white/5 text-xs text-slate-500 uppercase tracking-wider">
                     <span>Product</span>
@@ -371,7 +357,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      
       <section ref={statsRef} className="py-20 px-6 border-y border-white/5">
         <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
           <StatCard
@@ -401,7 +386,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-     
       <section id="features" className="py-28 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -419,9 +403,7 @@ const LandingPage = () => {
             </p>
           </div>
 
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            
             <div className="group bg-[#0d1117] border border-white/10 rounded-2xl p-8 hover:border-[#006989]/40 transition-all duration-300 relative overflow-hidden">
               <div className="absolute inset-0 bg-linear-to-b from-[#006989]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative">
@@ -443,7 +425,6 @@ const LandingPage = () => {
               </div>
             </div>
 
-            
             <div className="group bg-[#0d1117] border border-white/10 rounded-2xl p-8 hover:border-[#006989]/40 transition-all duration-300 relative overflow-hidden">
               <div className="absolute inset-0 bg-linear-to-br from-[#006989]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative">
@@ -470,7 +451,6 @@ const LandingPage = () => {
             </div>
           </div>
 
-          
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {ReivewCard.map((f) => (
               <div
@@ -488,7 +468,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      
       <section id="howitworks" className="py-28 px-6 bg-[#0d1117]">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
@@ -501,7 +480,6 @@ const LandingPage = () => {
           </div>
 
           <div className="relative">
-            
             <div className="hidden md:block absolute left-7 top-8 bottom-8 w-px bg-linear-to-b from-[#006989] via-[#006989]/40 to-transparent" />
 
             <div className="space-y-8">
@@ -526,7 +504,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      
       <section id="for-you" className="py-28 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -539,7 +516,6 @@ const LandingPage = () => {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            
             <div className="bg-linear-to-br from-[#006989]/20 to-[#006989]/5 border border-[#006989]/30 rounded-2xl p-8">
               <div className="flex items-center gap-3 mb-6">
                 <div className="bg-[#006989] p-2.5 rounded-xl">
@@ -629,7 +605,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-    
       <section className="py-20 px-6 bg-[#0d1117] border-y border-white/5">
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
@@ -670,7 +645,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-     
       <section className="py-28 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
@@ -734,7 +708,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      
       <footer className="py-28 px-6 text-center relative overflow-hidden">
         <div className="absolute inset-0 bg-linear-to-b from-transparent to-[#006989]/10 pointer-events-none" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-100 bg-[#006989]/10 rounded-full blur-[100px] pointer-events-none" />
@@ -757,7 +730,7 @@ const LandingPage = () => {
             — no credit card required.
           </p>
           <Button
-            onClick={() => setShowModal(true)}
+            onClick={() => router.push("/login?mode=signup")}
             className="bg-[#006989] hover:bg-[#005a75] text-white px-10 py-6 text-lg font-bold rounded-xl gap-3 group shadow-2xl shadow-[#006989]/30"
           >
             Get Early Access — It&apos;s Free
@@ -784,98 +757,7 @@ const LandingPage = () => {
         </div>
       </footer>
 
-      
-      {showModal && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/70 backdrop-blur-md"
-            onClick={() => setShowModal(false)}
-          />
-          <div className="relative w-full max-w-md bg-[#0d1117] border border-white/10 rounded-3xl shadow-2xl p-8 animate-in fade-in zoom-in-95 duration-200">
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors"
-            >
-              <X size={22} />
-            </button>
-
-            <div className="mb-8">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="bg-[#006989] p-1.5 rounded-lg">
-                  <Zap size={16} fill="white" className="text-white" />
-                </div>
-                <span className="font-black tracking-tighter">BizLink</span>
-              </div>
-              <h2 className="text-2xl font-black tracking-tight mb-1">
-                Who are you?
-              </h2>
-              <p className="text-slate-400 text-sm">
-                Select your role to get started
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <button
-                onClick={() => handleRoleSelect("WHOLESALER")}
-                className="group w-full flex items-center gap-5 p-5 rounded-2xl border border-white/10 hover:border-[#006989]/60 hover:bg-[#006989]/5 transition-all text-left"
-              >
-                <div className="bg-[#006989]/20 p-3.5 rounded-xl group-hover:bg-[#006989] transition-colors">
-                  <Warehouse
-                    size={24}
-                    className="text-[#4db8d4] group-hover:text-white transition-colors"
-                  />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-black text-base uppercase tracking-tight">
-                    Wholesaler
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Manage inventory & sync with retailers
-                  </p>
-                </div>
-                <ChevronRight
-                  size={18}
-                  className="text-slate-600 group-hover:text-[#4db8d4] transition-colors"
-                />
-              </button>
-
-              <button
-                onClick={() => handleRoleSelect("RETAILER")}
-                className="group w-full flex items-center gap-5 p-5 rounded-2xl border border-white/10 hover:border-[#006989]/60 hover:bg-[#006989]/5 transition-all text-left"
-              >
-                <div className="bg-white/5 p-3.5 rounded-xl group-hover:bg-[#006989] transition-colors">
-                  <Store
-                    size={24}
-                    className="text-slate-400 group-hover:text-white transition-colors"
-                  />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-black text-base uppercase tracking-tight">
-                    Retailer
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Browse live stock & connect with wholesalers
-                  </p>
-                </div>
-                <ChevronRight
-                  size={18}
-                  className="text-slate-600 group-hover:text-[#4db8d4] transition-colors"
-                />
-              </button>
-            </div>
-
-            <p className="text-center text-xs text-slate-600 mt-6">
-              By continuing you agree to our{" "}
-              <a
-                href="#"
-                className="text-slate-400 hover:text-white transition-colors underline"
-              >
-                Terms of Service
-              </a>
-            </p>
-          </div>
-        </div>
-      )}
+     
     </div>
   );
 };
