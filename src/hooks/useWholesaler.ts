@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import useAuth from "./useAuth";
+import { getSocket } from "@/lib/socket";
 
 export interface Product {
   id: string;
@@ -57,19 +58,54 @@ const useWholesaler = () => {
     }
     const loadAll = async () => {
       setLoading(true);
-      await Promise.all([refetchProducts(), refetchConnections(), fetchAllRetailers()]);
+      await Promise.all([
+        refetchProducts(),
+        refetchConnections(),
+        fetchAllRetailers(),
+      ]);
       setLoading(false);
     };
     loadAll();
   }, [user?.id, refetchProducts, refetchConnections, fetchAllRetailers]);
 
+  // ... component ke andar, baaki useEffects ke saath:
+
+  useEffect(() => {
+    if (!user?.id || user.role !== "WHOLESALER") return;
+
+    const socket = getSocket();
+    if (!socket.connected) socket.connect();
+
+    const handleUpdate = (product: Product) => {
+      setProducts((prev) =>
+        prev.map((p) => (p.id === product.id ? product : p)),
+      );
+    };
+
+    const handleLowStock = (data: {
+      productId: string;
+      name: string;
+      quantity: number;
+    }) => {
+      toast.warning(`Low stock: "${data.name}" — only ${data.quantity} left`);
+    };
+
+    socket.on("product:update", handleUpdate);
+    socket.on("product:low-stock", handleLowStock);
+
+    return () => {
+      socket.off("product:update", handleUpdate);
+      socket.off("product:low-stock", handleLowStock);
+    };
+  }, [user?.id, user?.role]);
   const handleAddOrUpdate = async (
     name: string,
     price: string,
     quantity: number,
-    editProduct: Product | null
+    editProduct: Product | null,
   ) => {
-    if (!name || !price || !quantity) return toast.error("Please fill all fields");
+    if (!name || !price || !quantity)
+      return toast.error("Please fill all fields");
     try {
       if (editProduct) {
         await api.put(`/products/${editProduct.id}`, {

@@ -10,14 +10,18 @@ import {
   Mail,
   Phone,
   BadgeInfo,
+  Loader2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
+import { toast } from "sonner";
 
 interface User {
   id: string;
   name: string;
   email: string;
-  phone?: string; 
+  phone?: string;
   role: "RETAILER" | "WHOLESALER";
 }
 
@@ -26,15 +30,43 @@ type Props = {
 };
 
 const WholesalerNav = ({ user }: Props) => {
-  const { Logout } = useAuth();
+  const { Logout, changePassword, deleteAccount } = useAuth();
   const [open, setOpen] = useState(false);
+
+  // Modals state
   const [showDetails, setShowDetails] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  
+  // API Loading states
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isChangingPass, setIsChangingPass] = useState(false);
+
+  // Passwords state
+  const [passwords, setPasswords] = useState({
+    current: "",
+    new: "",
+    confirm: "",
+  });
+
+  // Show/Hide Password states for each field
+  const [showVisibility, setShowVisibility] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
+
+  const toggleVisibility = (field: "current" | "new" | "confirm") => {
+    setShowVisibility((prev) => ({ ...prev, [field]: !prev[field] }));
+  };
+
+  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -50,8 +82,44 @@ const WholesalerNav = ({ user }: Props) => {
     }
   };
 
+  // --- DELETE ACCOUNT LOGIC ---
   const handleDeleteAccount = async () => {
-   
+    const confirmed = window.confirm(
+      "Are you absolutely sure? This will permanently delete your account, inventory, and connections."
+    );
+    if (!confirmed) return;
+
+    try {
+      setIsDeleting(true);
+      await deleteAccount();
+    } catch (error) {
+      // Error notification is handled by hook
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // --- CHANGE PASSWORD LOGIC ---
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (passwords.new !== passwords.confirm) {
+      return toast.error("New passwords do not match!");
+    }
+    if (passwords.new.length < 6) {
+      return toast.error("New password must be at least 6 characters.");
+    }
+
+    try {
+      setIsChangingPass(true);
+      await changePassword(passwords.current, passwords.new);
+      setPasswords({ current: "", new: "", confirm: "" });
+      setShowChangePassword(false);
+    } catch (error) {
+      // Errors are toasted by hook
+    } finally {
+      setIsChangingPass(false);
+    }
   };
 
   return (
@@ -71,7 +139,6 @@ const WholesalerNav = ({ user }: Props) => {
           </span>
         </div>
 
-        
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setOpen((prev) => !prev)}
@@ -100,7 +167,7 @@ const WholesalerNav = ({ user }: Props) => {
               <button
                 onClick={() => {
                   setOpen(false);
-                  
+                  setShowChangePassword(true);
                 }}
                 className="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors border-t border-gray-100"
               >
@@ -120,17 +187,16 @@ const WholesalerNav = ({ user }: Props) => {
         </div>
       </nav>
 
-      
+      {/* --- PERSONAL DETAILS MODAL --- */}
       {showDetails && (
         <div
-          className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
           onClick={() => setShowDetails(false)}
         >
           <div
             className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            
             <div className="flex items-center justify-between px-5 py-4 bg-[#006989] text-white">
               <h2 className="text-lg font-bold">Personal Details</h2>
               <button
@@ -141,7 +207,6 @@ const WholesalerNav = ({ user }: Props) => {
               </button>
             </div>
 
-            
             <div className="p-5 space-y-4">
               <DetailRow
                 icon={<UserIcon size={18} className="text-[#006989]" />}
@@ -165,25 +230,146 @@ const WholesalerNav = ({ user }: Props) => {
               />
             </div>
 
-            
             <div className="px-5 py-4 border-t border-gray-100">
               <button
                 onClick={handleDeleteAccount}
-                className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 font-semibold py-2.5 rounded-lg hover:bg-red-100 transition-colors"
+                disabled={isDeleting}
+                className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 font-semibold py-2.5 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
               >
-                <Trash2 size={18} />
-                Delete Account
+                {isDeleting ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <Trash2 size={18} />
+                )}
+                {isDeleting ? "Deleting..." : "Delete Account"}
               </button>
-              {/* <p className="text-[11px] text-gray-400 text-center mt-2">
-                Account delete hone ke baad data permanently hat jayega.
-              </p> */}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- CHANGE PASSWORD MODAL --- */}
+      {showChangePassword && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setShowChangePassword(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 bg-[#006989] text-white">
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                <KeyRound size={20} />
+                Change Password
+              </h2>
+              <button
+                onClick={() => setShowChangePassword(false)}
+                className="p-1 rounded-lg hover:bg-white/20 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleChangePassword} className="p-5 space-y-4">
+              {/* CURRENT PASSWORD */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+                  Current Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showVisibility.current ? "text" : "password"}
+                    required
+                    value={passwords.current}
+                    onChange={(e) =>
+                      setPasswords({ ...passwords, current: e.target.value })
+                    }
+                    className="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006989]/50 text-sm"
+                    placeholder="Enter current password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => toggleVisibility("current")}
+                    className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-[#006989] transition-colors"
+                  >
+                    {showVisibility.current ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* NEW PASSWORD */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+                  New Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showVisibility.new ? "text" : "password"}
+                    required
+                    value={passwords.new}
+                    onChange={(e) =>
+                      setPasswords({ ...passwords, new: e.target.value })
+                    }
+                    className="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006989]/50 text-sm"
+                    placeholder="Min 6 characters"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => toggleVisibility("new")}
+                    className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-[#006989] transition-colors"
+                  >
+                    {showVisibility.new ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* CONFIRM NEW PASSWORD */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+                  Confirm New Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showVisibility.confirm ? "text" : "password"}
+                    required
+                    value={passwords.confirm}
+                    onChange={(e) =>
+                      setPasswords({ ...passwords, confirm: e.target.value })
+                    }
+                    className="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006989]/50 text-sm"
+                    placeholder="Type new password again"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => toggleVisibility("confirm")}
+                    className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-[#006989] transition-colors"
+                  >
+                    {showVisibility.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isChangingPass}
+                  className="w-full flex items-center justify-center gap-2 bg-[#006989] hover:bg-[#005570] text-white font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {isChangingPass ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : null}
+                  {isChangingPass ? "Updating..." : "Update Password"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
     </>
   );
 };
+
 const DetailRow = ({
   icon,
   label,

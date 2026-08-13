@@ -1,5 +1,6 @@
 "use client";
 import api from "@/lib/api";
+import { getSocket } from "@/lib/socket";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -73,6 +74,7 @@ const useAuth = () => {
   const Logout = async (): Promise<void> => {
     try {
       await api.post("/auth/logout");
+      getSocket().disconnect();
       setUser(null);
       toast.success("Logged out successfully");
       router.push("/");
@@ -82,7 +84,32 @@ const useAuth = () => {
     }
   };
 
-  return { user, loading, Login, SignUp, Logout };
+  // --- NAYA LOGIC YAHAN HAI ---
+  const changePassword = async (currentPassword: string, newPassword: string): Promise<void> => {
+    try {
+      await api.put("/auth/change-password", { currentPassword, newPassword });
+      toast.success("Password changed successfully! Please log in again.");
+      await Logout(); // Security ke liye automatically logout
+    } catch (err: any) {
+      const message = err.response?.data?.message || "Failed to change password";
+      toast.error(message);
+      throw new Error(message);
+    }
+  };
+
+  const deleteAccount = async (): Promise<void> => {
+    try {
+      await api.delete("/auth/account");
+      toast.success("Account deleted permanently");
+      await Logout(); // Delete hone ke baad session clean aur redirect
+    } catch (err: any) {
+      const message = err.response?.data?.message || "Failed to delete account";
+      toast.error(message);
+      throw new Error(message);
+    }
+  };
+
+  return { user, loading, Login, SignUp, Logout, changePassword, deleteAccount };
 };
 
 export default useAuth;
