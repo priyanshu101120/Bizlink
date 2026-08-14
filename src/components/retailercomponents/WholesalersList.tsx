@@ -24,10 +24,10 @@ export default function WholesalersList({
               className="flex items-center justify-between px-4 py-3 border-b border-gray-100 last:border-0">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-medium text-sm">
-                  {conn.profile.name.charAt(0).toUpperCase()}
+                  {conn.wholesaler.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-800">{conn.profile.name}</p>
+                  <p className="text-sm font-medium text-gray-800">{conn.wholesaler.name}</p>
                   <p className="text-xs text-gray-500">Connected</p>
                 </div>
               </div>

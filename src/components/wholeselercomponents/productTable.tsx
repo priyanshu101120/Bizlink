@@ -92,9 +92,9 @@ const productTable = ({ products, handleEditProduct, handleDelete }: Props) => {
                     <div className="flex flex-col">
                       <span className="font-bold text-[#006989] text-base">
                         ₹
-                        {product.price.toLocaleString("en-IN", {
+                        {product.price?.toLocaleString("en-IN", {
                           minimumFractionDigits: 2,
-                        })}
+                        }) ?? "0.00"}
                       </span>
                       <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
                         per item

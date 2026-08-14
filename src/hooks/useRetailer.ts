@@ -1,15 +1,22 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "@/lib/api";
 import { getSocket } from "@/lib/socket";
 import { toast } from "sonner";
 import useAuth from "./useAuth";
 
+export interface Profile {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
 export interface Connection {
   id: string;
   wholesalerId: string;
   retailerId: string;
-  wholesaler: { id: string; name: string };
+  wholesaler: { id: string; name: string; email: string };
 }
 
 export interface Product {
@@ -19,14 +26,24 @@ export interface Product {
   quantity: number;
   createdAt: string;
   wholesalerId: string;
+  wholesaler?: { name: string };
+}
+
+export interface AppNotification {
+  id: number;
+  message: string;
+  type: "warning" | "danger" | "success";
+  read: boolean;
+  time: string;
 }
 
 const useRetailer = () => {
   const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
+  const [allWholesalers, setAllWholesalers] = useState<Profile[]>([]);
+  const [notification, setNotification] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
-  const joinedRoomsRef = useRef<Set<string>>(new Set());
 
   const fetchConnections = useCallback(async () => {
     const { data } = await api.get("/connections/mine");
@@ -39,73 +56,78 @@ const useRetailer = () => {
     setProducts(data.products);
   }, []);
 
+  const fetchAllWholesalers = useCallback(async () => {
+    const { data } = await api.get("/users/wholesalers");
+    setAllWholesalers(data.wholesalers);
+  }, []);
+
   useEffect(() => {
     if (!user?.id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoading(false);
       return;
     }
     const loadAll = async () => {
       setLoading(true);
-      await fetchConnections();
-      await fetchProducts();
+      await Promise.all([fetchConnections(), fetchProducts(), fetchAllWholesalers()]);
       setLoading(false);
     };
     loadAll();
-  }, [user?.id, fetchConnections, fetchProducts]);
+  }, [user?.id, fetchConnections, fetchProducts, fetchAllWholesalers]);
 
-  // Realtime — socket connect + rooms join + live listeners
+ 
   useEffect(() => {
     if (!user?.id || user.role !== "RETAILER") return;
 
     const socket = getSocket();
-    if (!socket.connected) socket.connect();
+    socket.connect();
 
-    const joinRooms = () => {
-      const ids = connections.map((c) => c.wholesalerId);
-      const newIds = ids.filter((id) => !joinedRoomsRef.current.has(id));
-      if (newIds.length > 0) {
-        socket.emit("join-wholesaler-rooms", newIds);
-        newIds.forEach((id) => joinedRoomsRef.current.add(id));
+    const joinRooms = async () => {
+      const conns = await fetchConnections();
+      const wholesalerIds = conns.map((c) => c.wholesalerId);
+      if (wholesalerIds.length > 0) {
+        socket.emit("join-wholesaler-rooms", wholesalerIds);
       }
     };
+    joinRooms();
 
-    if (socket.connected) joinRooms();
-    socket.on("connect", joinRooms);
-
-    const handleUpdate = (product: Product) => {
+    const handleProductUpdate = (product: Product) => {
       setProducts((prev) => {
         const exists = prev.some((p) => p.id === product.id);
-        return exists
-          ? prev.map((p) => (p.id === product.id ? product : p))
-          : [product, ...prev];
+        if (exists) return prev.map((p) => (p.id === product.id ? { ...p, ...product } : p));
+        return [product, ...prev];
       });
+      toast.success(`"${product.name}" was updated`);
     };
 
     const handleLowStock = (data: { productId: string; name: string; quantity: number }) => {
-      toast.warning(`Low stock: "${data.name}" — only ${data.quantity} left`);
+      const note: AppNotification = {
+        id: Date.now(),
+        message: `Low stock: "${data.name}" (${data.quantity} left)`,
+        type: data.quantity === 0 ? "danger" : "warning",
+        read: false,
+        time: new Date().toISOString(),
+      };
+      setNotification((prev) => [...prev, note]);
+      toast.warning(note.message);
     };
 
-    socket.on("product:update", handleUpdate);
+    socket.on("product:update", handleProductUpdate);
     socket.on("product:low-stock", handleLowStock);
 
     return () => {
-      socket.off("connect", joinRooms);
-      socket.off("product:update", handleUpdate);
+      socket.off("product:update", handleProductUpdate);
       socket.off("product:low-stock", handleLowStock);
     };
-  }, [user?.id, user?.role, connections]);
+  }, [user?.id, user?.role, fetchConnections]);
 
   const connectToWholesaler = async (wholesalerId: string) => {
     try {
       await api.post("/connections", { targetUserId: wholesalerId });
       toast.success("Connected successfully");
-      await fetchConnections();
+      const conns = await fetchConnections();
       await fetchProducts();
-      const socket = getSocket();
-      if (socket.connected) {
-        socket.emit("join-wholesaler-rooms", [wholesalerId]);
-        joinedRoomsRef.current.add(wholesalerId);
-      }
+      getSocket().emit("join-wholesaler-rooms", conns.map((c) => c.wholesalerId));
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to connect");
     }
@@ -126,6 +148,9 @@ const useRetailer = () => {
     user,
     products,
     connections,
+    allWholesalers,
+    notification,
+    setNotification,
     loading,
     connectToWholesaler,
     disconnectWholesaler,

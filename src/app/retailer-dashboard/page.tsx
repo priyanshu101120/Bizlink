@@ -11,7 +11,7 @@ import RetailerSkeleton from "@/components/ReatilerSkeleton";
 
 const RetailerDashboard = () => {
   const {
-    profile,
+    user,
     loading,
     products,
     connections,
@@ -25,40 +25,32 @@ const RetailerDashboard = () => {
   const [showNotification, setShowNotification] = useState(false);
   const [activeTab, setActiveTab] = useState("inventory");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedWholesalerId, setSelectedWholesalerId] = useState<
-    string | null
-  >(null);
+  const [selectedWholesalerId, setSelectedWholesalerId] = useState<string | null>(null);
 
   const displayedProducts = useMemo(() => {
     let baseProducts = products;
-
     if (selectedWholesalerId) {
-      baseProducts = baseProducts.filter(
-        (p) => p.wholesalerId === selectedWholesalerId,
-      );
+      baseProducts = baseProducts.filter((p) => p.wholesalerId === selectedWholesalerId);
     }
     if (searchQuery) {
       baseProducts = baseProducts.filter((p) =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()),
+        p.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     return baseProducts;
   }, [selectedWholesalerId, products, searchQuery]);
 
-  // const filteredWholesalers = allWholesalers.filter(
-  //   (w) =>
-  //     w.name.includes(searchQuery.toLowerCase()) &&
-  //     !connections.some((c) => c.wholesalerId === w.id),
-  // );
+  const filteredWholesalers = allWholesalers.filter(
+    (w) =>
+      w.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !connections.some((c) => c.wholesalerId === w.id)
+  );
 
   const handleLogout = async () => {
     try {
       await Logout();
     } catch (error) {
       console.error("Logout failed:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
-      alert("Failed to logout. Please try again." + errorMessage);
     }
   };
 
@@ -67,7 +59,7 @@ const RetailerDashboard = () => {
   return (
     <div className="min-h-screen bg-[#eaebed]">
       <RetailerNav
-        profile={profile}
+        profile={user}
         notification={notification}
         setNotification={setNotification}
         showNotification={showNotification}

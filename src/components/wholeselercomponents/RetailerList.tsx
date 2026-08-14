@@ -1,4 +1,4 @@
-import { Connection} from "@/hooks/useWholesaler";
+import { Connection, Retailer} from "@/hooks/useWholesaler";
 
 type Props = {
   connections: Connection[];

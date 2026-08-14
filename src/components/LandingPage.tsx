@@ -558,7 +558,7 @@ const LandingPage = () => {
               </Button>
             </div>
 
-            {/* Retailer */}
+            
             <div className="bg-[#0d1117] border border-white/10 rounded-2xl p-8">
               <div className="flex items-center gap-3 mb-6">
                 <div className="bg-white/10 p-2.5 rounded-xl">

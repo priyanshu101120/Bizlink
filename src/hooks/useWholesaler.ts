@@ -68,7 +68,7 @@ const useWholesaler = () => {
     loadAll();
   }, [user?.id, refetchProducts, refetchConnections, fetchAllRetailers]);
 
-  // ... component ke andar, baaki useEffects ke saath:
+  
 
   useEffect(() => {
     if (!user?.id || user.role !== "WHOLESALER") return;

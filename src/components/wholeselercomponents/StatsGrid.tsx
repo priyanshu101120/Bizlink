@@ -8,7 +8,7 @@ type Props = {
 };
 
 const StatsGrid = ({ products }: Props) => {
-  const inventoryValue = products.reduce((t, p) => t + p.quantity * p.price, 0);
+  const inventoryValue = products.reduce((t, p) => t + p.quantity * (p.price ?? 0), 0);
   const totalStock = products.reduce((t, p) => t + p.quantity, 0);
 
   const stats = [

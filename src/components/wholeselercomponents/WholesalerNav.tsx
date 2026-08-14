@@ -1,3 +1,4 @@
+"use client";
 import useAuth from "@/hooks/useAuth";
 import {
   Zap,
@@ -15,7 +16,18 @@ import {
   EyeOff,
 } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { Button } from "../ui/button";
 
 interface User {
   id: string;
@@ -32,24 +44,17 @@ type Props = {
 const WholesalerNav = ({ user }: Props) => {
   const { Logout, changePassword, deleteAccount } = useAuth();
   const [open, setOpen] = useState(false);
-
-  // Modals state
   const [showDetails, setShowDetails] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // API Loading states
   const [isDeleting, setIsDeleting] = useState(false);
   const [isChangingPass, setIsChangingPass] = useState(false);
-
-  // Passwords state
   const [passwords, setPasswords] = useState({
     current: "",
     new: "",
     confirm: "",
   });
-
-  // Show/Hide Password states for each field
   const [showVisibility, setShowVisibility] = useState({
     current: false,
     new: false,
@@ -60,7 +65,6 @@ const WholesalerNav = ({ user }: Props) => {
     setShowVisibility((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
@@ -82,24 +86,19 @@ const WholesalerNav = ({ user }: Props) => {
     }
   };
 
-  // --- DELETE ACCOUNT LOGIC ---
+  
   const handleDeleteAccount = async () => {
-    const confirmed = window.confirm(
-      "Are you absolutely sure? This will permanently delete your account, inventory, and connections."
-    );
-    if (!confirmed) return;
-
     try {
       setIsDeleting(true);
       await deleteAccount();
     } catch (error) {
-      // Error notification is handled by hook
+      
     } finally {
       setIsDeleting(false);
     }
   };
 
-  // --- CHANGE PASSWORD LOGIC ---
+  
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -116,7 +115,7 @@ const WholesalerNav = ({ user }: Props) => {
       setPasswords({ current: "", new: "", confirm: "" });
       setShowChangePassword(false);
     } catch (error) {
-      // Errors are toasted by hook
+      
     } finally {
       setIsChangingPass(false);
     }
@@ -187,10 +186,10 @@ const WholesalerNav = ({ user }: Props) => {
         </div>
       </nav>
 
-      {/* --- PERSONAL DETAILS MODAL --- */}
+     
       {showDetails && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 p-4"
           onClick={() => setShowDetails(false)}
         >
           <div
@@ -231,27 +230,54 @@ const WholesalerNav = ({ user }: Props) => {
             </div>
 
             <div className="px-5 py-4 border-t border-gray-100">
-              <button
-                onClick={handleDeleteAccount}
-                disabled={isDeleting}
-                className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 font-semibold py-2.5 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setShowDetails(false);
+                  setShowDeleteConfirm(true);
+                }}
+                className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 font-semibold py-2.5 rounded-lg hover:bg-red-100 transition-colors"
               >
-                {isDeleting ? (
-                  <Loader2 size={18} className="animate-spin" />
-                ) : (
-                  <Trash2 size={18} />
-                )}
-                {isDeleting ? "Deleting..." : "Delete Account"}
-              </button>
+                <Trash2 className="w-3.5 h-3.5" />
+                Delete Account
+              </Button>
             </div>
           </div>
         </div>
       )}
 
-      {/* --- CHANGE PASSWORD MODAL --- */}
+     
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete your account, inventory, and connections.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-500 text-white hover:bg-red-600 focus:ring-red-500"
+              onClick={handleDeleteAccount}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <Trash2 size={18} />
+              )}
+              {isDeleting ? "Deleting..." : "Delete Account"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+    
       {showChangePassword && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 p-4"
           onClick={() => setShowChangePassword(false)}
         >
           <div
@@ -272,7 +298,6 @@ const WholesalerNav = ({ user }: Props) => {
             </div>
 
             <form onSubmit={handleChangePassword} className="p-5 space-y-4">
-              {/* CURRENT PASSWORD */}
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
                   Current Password
@@ -298,7 +323,6 @@ const WholesalerNav = ({ user }: Props) => {
                 </div>
               </div>
 
-              {/* NEW PASSWORD */}
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
                   New Password
@@ -324,7 +348,6 @@ const WholesalerNav = ({ user }: Props) => {
                 </div>
               </div>
 
-              {/* CONFIRM NEW PASSWORD */}
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
                   Confirm New Password
@@ -356,9 +379,7 @@ const WholesalerNav = ({ user }: Props) => {
                   disabled={isChangingPass}
                   className="w-full flex items-center justify-center gap-2 bg-[#006989] hover:bg-[#005570] text-white font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-50"
                 >
-                  {isChangingPass ? (
-                    <Loader2 size={18} className="animate-spin" />
-                  ) : null}
+                  {isChangingPass ? <Loader2 size={18} className="animate-spin" /> : null}
                   {isChangingPass ? "Updating..." : "Update Password"}
                 </button>
               </div>

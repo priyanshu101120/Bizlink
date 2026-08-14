@@ -3,6 +3,7 @@ import useAuth from "@/hooks/useAuth";
 import { Building2, EyeOff, Lock, Store, User, Warehouse } from "lucide-react";
 import { motion } from "framer-motion";
 import React, { FormEvent, useState } from "react";
+import { toast } from "sonner";
 
 type Role = "WHOLESALER" | "RETAILER";
 
@@ -48,7 +49,7 @@ const LoginPage = ({
       if (isSingnUp) {
         await SignUp(name, email, password, role);
         switchMode(false);
-        alert("BizLink account created! Please login now.");
+        toast.success("Account created! Please login now.");
       } else {
         await Login(email, password);
       }

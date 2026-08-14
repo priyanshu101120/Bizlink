@@ -54,7 +54,7 @@ const OverviewTab = ({ products }: Props) => {
         .map((p) => ({
           name: p.name.length > 10 ? p.name.slice(0, 10) + "…" : p.name,
           Stock: p.quantity,
-          "Price (₹)": Math.round(p.price),
+          "Price (₹)": Math.round(p.price || 0),
         })),
     [products]
   );
@@ -89,7 +89,7 @@ const OverviewTab = ({ products }: Props) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4 md:px-6">
-      {/* Bar Chart — Stock */}
+      
       <Card className="border border-[#006989]/20 shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-bold uppercase tracking-wide text-gray-500">
@@ -112,7 +112,7 @@ const OverviewTab = ({ products }: Props) => {
         </CardContent>
       </Card>
 
-      {/* Line Chart — Price */}
+      
       <Card className="border border-[#006989]/20 shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-bold uppercase tracking-wide text-gray-500">
@@ -141,7 +141,7 @@ const OverviewTab = ({ products }: Props) => {
         </CardContent>
       </Card>
 
-      {/* Horizontal Bar — Stock Health */}
+      
       <Card className="border border-[#006989]/20 shadow-sm md:col-span-2">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-bold uppercase tracking-wide text-gray-500">

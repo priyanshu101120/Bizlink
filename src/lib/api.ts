@@ -11,7 +11,7 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     const isRefreshCall = originalRequest?.url?.includes("/auth/refresh");
 
-    // Agar refresh call khud fail ho, toh dobara refresh try mat karo — loop rokne ke liye
+   
     if (error.response?.status === 401 && !originalRequest._retry && !isRefreshCall) {
       originalRequest._retry = true;
       try {

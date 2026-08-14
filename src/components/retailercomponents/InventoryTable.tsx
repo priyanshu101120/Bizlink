@@ -2,6 +2,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Product } from "@/hooks/useRetailer";
+
 type Props = { products: Product[] };
 
 export default function InventoryTable({ products }: Props) {
@@ -21,9 +22,9 @@ export default function InventoryTable({ products }: Props) {
           {products.map((product) => (
             <TableRow key={product.id}>
               <TableCell className="font-medium">{product.name}</TableCell>
-              <TableCell>{product.profile?.name}</TableCell>
+              <TableCell>{product.wholesaler?.name || "—"}</TableCell>
               <TableCell>{product.quantity}</TableCell>
-              <TableCell>₹{product.price.toLocaleString()}</TableCell>
+              <TableCell>{product.price != null ? `₹${product.price.toLocaleString()}` : "—"}</TableCell>
               <TableCell className="text-right">
                 {product.quantity === 0 ? (
                   <Badge variant="destructive">Out of Stock</Badge>

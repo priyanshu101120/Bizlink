@@ -84,30 +84,34 @@ const useAuth = () => {
     }
   };
 
-  // --- NAYA LOGIC YAHAN HAI ---
-  const changePassword = async (currentPassword: string, newPassword: string): Promise<void> => {
-    try {
-      await api.put("/auth/change-password", { currentPassword, newPassword });
-      toast.success("Password changed successfully! Please log in again.");
-      await Logout(); // Security ke liye automatically logout
-    } catch (err: any) {
-      const message = err.response?.data?.message || "Failed to change password";
-      toast.error(message);
-      throw new Error(message);
-    }
-  };
 
-  const deleteAccount = async (): Promise<void> => {
-    try {
-      await api.delete("/auth/account");
-      toast.success("Account deleted permanently");
-      await Logout(); // Delete hone ke baad session clean aur redirect
-    } catch (err: any) {
-      const message = err.response?.data?.message || "Failed to delete account";
-      toast.error(message);
-      throw new Error(message);
-    }
-  };
+  const changePassword = async (currentPassword: string, newPassword: string): Promise<void> => {
+  try {
+    await api.put("/auth/change-password", { currentPassword, newPassword });
+    toast.success("Password changed successfully! Please log in again.");
+    setUser(null);
+    getSocket().disconnect();
+    router.push("/login");
+  } catch (err: any) {
+    const message = err.response?.data?.message || "Failed to change password";
+    toast.error(message);
+    throw new Error(message);
+  }
+};
+
+const deleteAccount = async (): Promise<void> => {
+  try {
+    await api.delete("/auth/account");
+    toast.success("Account deleted permanently");
+    setUser(null);
+    getSocket().disconnect();
+    router.push("/");
+  } catch (err: any) {
+    const message = err.response?.data?.message || "Failed to delete account";
+    toast.error(message);
+    throw new Error(message);
+  }
+};
 
   return { user, loading, Login, SignUp, Logout, changePassword, deleteAccount };
 };
